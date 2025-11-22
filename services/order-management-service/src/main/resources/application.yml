@@ -47,6 +47,8 @@ server:
 services:
   shopping-cart:
     url: ${SHOPPING_CART_URL:http://localhost:8083}
+  shipping:
+    url: ${SHIPPING_URL:http://localhost:8087}
 
 # Swagger/OpenAPI Configuration
 springdoc:
