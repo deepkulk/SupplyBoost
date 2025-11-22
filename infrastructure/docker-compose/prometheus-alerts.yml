@@ -1,0 +1,103 @@
+groups:
+  - name: supplyboost_alerts
+    interval: 30s
+    rules:
+      # Service Health Alerts
+      - alert: ServiceDown
+        expr: up{job=~".*-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5..",job=~".*-service"}[5m])) by (job)
+          /
+          sum(rate(http_server_requests_seconds_count{job=~".*-service"}[5m])) by (job)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "{{ $labels.job }} has an error rate above 5% (current: {{ $value | humanizePercentage }})."
+
+      # Performance Alerts
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_requests_seconds_bucket{job=~".*-service"}[5m])) by (job, le)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time on {{ $labels.job }}"
+          description: "{{ $labels.job }} p95 response time is above 1s (current: {{ $value }}s)."
+
+      # Resource Alerts
+      - alert: HighMemoryUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap",job=~".*-service"} / jvm_memory_max_bytes{area="heap",job=~".*-service"}) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.job }}"
+          description: "{{ $labels.job }} is using more than 90% of heap memory."
+
+      - alert: HighCPUUsage
+        expr: |
+          process_cpu_usage{job=~".*-service"} > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.job }}"
+          description: "{{ $labels.job }} CPU usage is above 80%."
+
+      # Database Alerts
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          hikaricp_connections_active{job=~".*-service"} / hikaricp_connections_max{job=~".*-service"} > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool near exhaustion on {{ $labels.job }}"
+          description: "{{ $labels.job }} is using more than 90% of database connections."
+
+      # Kafka Alerts
+      - alert: KafkaConsumerLag
+        expr: |
+          kafka_consumer_lag{job=~".*-service"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Kafka consumer lag on {{ $labels.job }}"
+          description: "{{ $labels.job }} has a consumer lag greater than 1000 messages."
+
+      # Business Metrics Alerts
+      - alert: NoOrdersProcessed
+        expr: |
+          rate(orders_created_total[15m]) == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No orders processed in the last 15 minutes"
+          description: "The system hasn't processed any orders recently. This might indicate a problem."
+
+      - alert: HighPaymentFailureRate
+        expr: |
+          rate(payments_failed_total[10m]) / rate(payments_attempted_total[10m]) > 0.10
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High payment failure rate"
+          description: "More than 10% of payment attempts are failing."

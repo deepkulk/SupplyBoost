@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: supplyboost
+  labels:
+    name: supplyboost
+    environment: production
