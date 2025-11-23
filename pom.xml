@@ -62,9 +62,6 @@
         <postgresql.version>42.7.1</postgresql.version>
         <liquibase.version>4.25.1</liquibase.version>
 
-        <!-- Messaging -->
-        <kafka.version>3.6.1</kafka.version>
-
         <!-- Search -->
         <elasticsearch.version>8.11.3</elasticsearch.version>
 
@@ -88,6 +85,16 @@
 
         <!-- Observability -->
         <micrometer.version>1.12.1</micrometer.version>
+        <micrometer-tracing.version>1.2.1</micrometer-tracing.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <opentelemetry.version>1.34.1</opentelemetry.version>
+
+        <!-- Performance Testing -->
+        <gatling.version>3.10.3</gatling.version>
+        <gatling-maven-plugin.version>4.7.0</gatling-maven-plugin.version>
+
+        <!-- Security -->
+        <owasp-dependency-check.version>9.0.7</owasp-dependency-check.version>
 
         <!-- Plugins -->
         <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
@@ -120,13 +127,6 @@
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-core</artifactId>
                 <version>${liquibase.version}</version>
-            </dependency>
-
-            <!-- Messaging - Kafka -->
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka</artifactId>
-                <version>${kafka.version}</version>
             </dependency>
 
             <!-- Elasticsearch -->
@@ -205,6 +205,28 @@
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-registry-prometheus</artifactId>
                 <version>${micrometer.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-tracing-bom</artifactId>
+                <version>${micrometer-tracing.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+
+            <!-- Performance Testing -->
+            <dependency>
+                <groupId>io.gatling.highcharts</groupId>
+                <artifactId>gatling-charts-highcharts</artifactId>
+                <version>${gatling.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -340,6 +362,38 @@
                         <buildArgs>
                             <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
                         </buildArgs>
+                    </configuration>
+                </plugin>
+
+                <!-- OWASP Dependency Check -->
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${owasp-dependency-check.version}</version>
+                    <configuration>
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <skipProvidedScope>true</skipProvidedScope>
+                        <skipRuntimeScope>false</skipRuntimeScope>
+                        <suppressionFiles>
+                            <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                        </suppressionFiles>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Gatling Maven Plugin -->
+                <plugin>
+                    <groupId>io.gatling</groupId>
+                    <artifactId>gatling-maven-plugin</artifactId>
+                    <version>${gatling-maven-plugin.version}</version>
+                    <configuration>
+                        <runMultipleSimulations>true</runMultipleSimulations>
                     </configuration>
                 </plugin>
             </plugins>

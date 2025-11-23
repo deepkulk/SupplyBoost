@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!--
+    This file contains suppressions for known false positives in OWASP Dependency Check.
+    Add suppressions cautiously and document the reason.
+    -->
+
+    <!-- Suppress false positives for Spring Framework -->
+    <suppress>
+        <notes><![CDATA[
+        False positive: CVE applies to older versions
+        ]]></notes>
+        <cve>CVE-2016-1000027</cve>
+    </suppress>
+
+    <!-- Example: Suppress vulnerability in test dependencies -->
+    <suppress>
+        <notes><![CDATA[
+        Test dependency - not exposed in production
+        ]]></notes>
+        <gav regex="true">^org\.testcontainers:.*:.*$</gav>
+        <cpe>cpe:/a:testcontainers:testcontainers</cpe>
+    </suppress>
+
+    <!-- Example: Suppress specific CVE for a library -->
+    <!--
+    <suppress>
+        <notes><![CDATA[
+        Reason for suppression
+        ]]></notes>
+        <gav regex="true">^com\.example:library:1.0.0$</gav>
+        <cve>CVE-XXXX-XXXXX</cve>
+    </suppress>
+    -->
+
+    <!-- Suppress logback vulnerability - false positive for our use case -->
+    <suppress>
+        <notes><![CDATA[
+        CVE-2021-42550: Only affects JNDI lookup which we don't use
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/ch\.qos\.logback/logback\-.*@.*$</packageUrl>
+        <cve>CVE-2021-42550</cve>
+    </suppress>
+</suppressions>

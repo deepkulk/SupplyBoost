@@ -4,6 +4,10 @@ global:
   external_labels:
     monitor: 'supplyboost-monitor'
 
+# Load alert rules
+rule_files:
+  - '/etc/prometheus/prometheus-alerts.yml'
+
 scrape_configs:
   # Prometheus itself
   - job_name: 'prometheus'

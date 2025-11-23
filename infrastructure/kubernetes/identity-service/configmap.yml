@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identity-service-config
+  namespace: supplyboost
+data:
+  database.url: "jdbc:postgresql://postgres-service:5432/identity_db"
+  application.yml: |
+    spring:
+      application:
+        name: identity-service
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: false
+      liquibase:
+        enabled: true
+
+    server:
+      port: 8081
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus,metrics
+      endpoint:
+        health:
+          show-details: when-authorized
+          probes:
+            enabled: true
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+        distribution:
+          percentiles-histogram:
+            http.server.requests: true
+        tags:
+          application: ${spring.application.name}
+          environment: production
+      tracing:
+        sampling:
+          probability: 0.1
+
+    logging:
+      level:
+        root: INFO
+        com.supplyboost: INFO
